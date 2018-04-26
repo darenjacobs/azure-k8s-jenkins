@@ -6,8 +6,8 @@ CWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 LOCATION=eastus
 RESOURCE_GROUP=demo-kube
 AKS_CLUSTER=demo-cluster
-#ACR_NAME=democontainer$RANDOM
-ACR_NAME=democontainer22466
+#ACR_NAME=demoacr$RANDOM
+ACR_NAME=demoacr244966
 EMAIL=daren.jacobs@fhlbny.com
 
 func_create_images(){
@@ -50,7 +50,6 @@ docker images
 export ACR_SERVER=$(az acr list -g $RESOURCE_GROUP --query "[].{acrLoginServer:loginServer}" --output tsv)
 
 docker tag azure-vote-front ${ACR_SERVER}/azure-vote-front:v1
-
 docker images
 
 # Push images to registry
@@ -64,6 +63,9 @@ az acr repository show-tags --name ${ACR_NAME} --repository azure-vote-front --o
 
 
 # Create Kubernetes Cluster
+az provider register -n Microsoft.Network
+az provider register -n Microsoft.Storage
+az provider register -n Microsoft.Compute
 az provider register -n Microsoft.ContainerService
 az aks create -n $AKS_CLUSTER -g $RESOURCE_GROUP -l $LOCATION --node-count 3 --ssh-key-value $HOME/.ssh/id_rsa.pub
 
@@ -85,5 +87,6 @@ ACR_ID=$(az acr show -n $ACR_NAME -g $RESOURCE_GROUP --query "id" --output tsv)
 
 #Deploy application
 kubectl create -f azure-vote-all-in-one-redis.yaml
+#kubectl create -f azure-vote.yaml
 
 kubectl get service azure-vote-front --watch &

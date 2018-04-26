@@ -39,7 +39,7 @@ spec:
     spec:
       containers:
       - name: azure-vote-front
-        image: demoacr244966.azurecr.io/azure-vote-front:v1
+        image: microsoft/azure-vote-front:v1
         ports:
         - containerPort: 80
         env:
