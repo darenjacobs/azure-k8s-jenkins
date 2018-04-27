@@ -4,10 +4,10 @@ set -euo pipefail
 
 CWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 LOCATION=eastus
-RESOURCE_GROUP=demo-kube
-AKS_CLUSTER=demo-cluster
-#ACR_NAME=demoacr$RANDOM
-ACR_NAME=demoacr244966
+BASE_NAME=demo
+RESOURCE_GROUP=${BASE_NAME}-kube
+AKS_CLUSTER=${BASE_NAME}-cluster
+export ACR_NAME=${BASE_NAME}acr$RANDOM
 EMAIL=daren.jacobs@fhlbny.com
 SERVICE_PRINCIPAL=$(az ad sp create-for-rbac --skip-assignment)
 
@@ -41,15 +41,14 @@ az group create -n $RESOURCE_GROUP -l $LOCATION
 
 # Deploy Azure Container Registry
 #az acr create -n $ACR_NAME -g $RESOURCE_GROUP --sku Basic
-az acr create -n $ACR_NAME -g $RESOURCE_GROUP --sku Managed_Standard --admin-enabled true
+az acr create -n $ACR_NAME -g $RESOURCE_GROUP --sku Standard --admin-enabled true
 
 # Container registry login
 az acr login -n $ACR_NAME
 ACR_ID=$(az acr show -n $ACR_NAME -g $RESOURCE_GROUP --query id -o tsv)
-ACR_SERVER=$(az acr list -g $RESOURCE_GROUP --query loginServer -o tsv)
-ACR_USERNAME=$(az acr show -n $ACR_NAME -g $RESOURCE_GROUP --query username -o tsv)
-ACR_PASSWORD=$(az acr show -n $ACR_NAME -g $RESOURCE_GROUP --query passwords[0].value -o tsv)
-
+ACR_SERVER=$(az acr show -n $ACR_NAME --query loginServer -o tsv)
+ACR_USERNAME=$(az acr credential show -n $ACR_NAME --query username -o tsv)
+ACR_PASSWORD=$(az acr credential show -n $ACR_NAME --query passwords[0].value -o tsv)
 
 # Tag container images
 docker tag azure-vote-front ${ACR_SERVER}/azure-vote-front:v1
@@ -71,11 +70,12 @@ az provider register -n Microsoft.Compute
 az provider register -n Microsoft.ContainerService
 
 # Use the Service Principal
-SP_APP_ID=$(echo $SERVICE_PRICIPAL |jq .'appId')
-SP_PASSWD=$(echo $SERVICE_PRICIPAL |jq .'password')
+SP_APP_ID=$(echo $SERVICE_PRINCIPAL |jq .'appId')
+SP_PASSWD=$(echo $SERVICE_PRINCIPAL |jq .'password')
 
 
-az aks create -n $AKS_CLUSTER -g $RESOURCE_GROUP -l $LOCATION --node-count 3 --service-principal $SP_APP_ID --client-secret $SP_PASSWD
+#az aks create -n $AKS_CLUSTER -g $RESOURCE_GROUP -l $LOCATION --node-count 3 --service-principal $SP_APP_ID --client-secret $SP_PASSWD
+az aks create -n $AKS_CLUSTER -g $RESOURCE_GROUP -l $LOCATION --node-count 3 --ssh-key-value $HOME/.ssh/id_rsa.pub
 
 # Get Kubernetes credentials
 az aks get-credentials -n $AKS_CLUSTER -g $RESOURCE_GROUP
@@ -86,6 +86,7 @@ kubectl config view
 kubectl get nodes
 
 #Deploy application
+sed -i 's/demoacr244966/${ACR_NAME}/g' azure-vote-all-in-one-redis.yaml
 kubectl create secret docker-registry SECRET_NAME --docker-server=$ACR_SERVER --docker-username=$ACR_USERNAME --docker-password="$ACR_PASSWORD" --docker-email=$EMAIL
 kubectl create -f azure-vote-all-in-one-redis.yaml
 
