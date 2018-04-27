@@ -25,3 +25,5 @@ echo "Service principal ID: $CLIENT_ID"
 echo "Service principal password: $SP_PASSWD"
 
 kubectl create secret docker-registry acr-auth --docker-server ${ ACR_LOGIN_SERVER} --docker-username ${SERVICE_PRINCIPAL_NAME} --docker-password ${SP_PASSWD} --docker-email ${EMAIL}
+
+# az group delete -n demo-kube --yes --no-wait

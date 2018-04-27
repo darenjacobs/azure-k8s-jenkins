@@ -86,8 +86,8 @@ kubectl config view
 kubectl get nodes
 
 #Deploy application
-sed -i 's/demoacr244966/${ACR_NAME}/g' azure-vote-all-in-one-redis.yaml
-kubectl create secret docker-registry SECRET_NAME --docker-server=$ACR_SERVER --docker-username=$ACR_USERNAME --docker-password="$ACR_PASSWORD" --docker-email=$EMAIL
+sed -i "s/demoacr244966/$ACR_NAME/g" azure-vote-all-in-one-redis.yaml
+kubectl create secret docker-registry docker-secret --docker-server=$ACR_SERVER --docker-username=$ACR_USERNAME --docker-password="$ACR_PASSWORD" --docker-email=$EMAIL
 kubectl create -f azure-vote-all-in-one-redis.yaml
 
 kubectl get service azure-vote-front --watch &
