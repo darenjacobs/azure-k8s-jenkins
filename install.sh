@@ -6,8 +6,7 @@ CWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 LOCATION=eastus
 RESOURCE_GROUP=demo-kube
 AKS_CLUSTER=demo-cluster
-#ACR_NAME=demoacr$RANDOM
-ACR_NAME=demoacr244966
+ACR_NAME=demoacr$RANDOM
 EMAIL=daren.jacobs@fhlbny.com
 
 func_create_images(){
@@ -82,11 +81,10 @@ CLIENT_ID=$(az aks show -n $AKS_CLUSTER -g $RESOURCE_GROUP --query "servicePrinc
 ACR_ID=$(az acr show -n $ACR_NAME -g $RESOURCE_GROUP --query "id" --output tsv)
 
 # Create role assignment Gives an error
-# az role assignment create --assignee $CLIENT_ID --role Reader --scope $ACR_ID
+az role assignment create --assignee $CLIENT_ID --role Reader --scope $ACR_ID
 
 
 #Deploy application
 kubectl create -f azure-vote-all-in-one-redis.yaml
-#kubectl create -f azure-vote.yaml
 
 kubectl get service azure-vote-front --watch &
