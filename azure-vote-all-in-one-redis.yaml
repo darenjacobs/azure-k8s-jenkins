@@ -39,14 +39,14 @@ spec:
     spec:
       containers:
       - name: azure-vote-front
-        image: demoacr244966.azurecr.io/azure-vote-front:v1
+        image: demoacr13174.azurecr.io/azure-vote-front:v1
         ports:
         - containerPort: 80
         env:
         - name: REDIS
           value: "azure-vote-back"
         imagePullSecrets:
-          - name: SECRET_NAME
+        - name: docker-secret
 ---
 apiVersion: v1
 kind: Service

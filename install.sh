@@ -9,7 +9,6 @@ RESOURCE_GROUP=${BASE_NAME}-kube
 AKS_CLUSTER=${BASE_NAME}-cluster
 export ACR_NAME=${BASE_NAME}acr$RANDOM
 EMAIL=daren.jacobs@fhlbny.com
-SERVICE_PRINCIPAL=$(az ad sp create-for-rbac --skip-assignment)
 
 func_create_images(){
 
@@ -62,19 +61,7 @@ docker push ${ACR_SERVER}/azure-vote-front:v1
 az acr repository list --name ${ACR_NAME} --output table
 az acr repository show-tags --name ${ACR_NAME} --repository azure-vote-front --output table
 
-
-# Create Kubernetes Cluster
-az provider register -n Microsoft.Network
-az provider register -n Microsoft.Storage
-az provider register -n Microsoft.Compute
-az provider register -n Microsoft.ContainerService
-
-# Use the Service Principal
-SP_APP_ID=$(echo $SERVICE_PRINCIPAL |jq .'appId')
-SP_PASSWD=$(echo $SERVICE_PRINCIPAL |jq .'password')
-
-
-#az aks create -n $AKS_CLUSTER -g $RESOURCE_GROUP -l $LOCATION --node-count 3 --service-principal $SP_APP_ID --client-secret $SP_PASSWD
+# Create Kubernetes cluster
 az aks create -n $AKS_CLUSTER -g $RESOURCE_GROUP -l $LOCATION --node-count 3 --ssh-key-value $HOME/.ssh/id_rsa.pub
 
 # Get Kubernetes credentials
@@ -86,7 +73,7 @@ kubectl config view
 kubectl get nodes
 
 #Deploy application
-sed -i "s/demoacr244966/$ACR_NAME/g" azure-vote-all-in-one-redis.yaml
+sed -i "s/demoacr13174/$ACR_NAME/g" azure-vote-all-in-one-redis.yaml
 kubectl create secret docker-registry docker-secret --docker-server=$ACR_SERVER --docker-username=$ACR_USERNAME --docker-password="$ACR_PASSWORD" --docker-email=$EMAIL
 kubectl create -f azure-vote-all-in-one-redis.yaml
 
