@@ -85,6 +85,7 @@ az role assignment create --assignee $CLIENT_ID --role Reader --scope $ACR_ID
 
 
 #Deploy application
+sed -i "s/demoacr244966/$ACR_NAME/g" azure-vote-all-in-one-redis.yaml
 kubectl create -f azure-vote-all-in-one-redis.yaml
 
 kubectl get service azure-vote-front --watch &
